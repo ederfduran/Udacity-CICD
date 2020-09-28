@@ -46,16 +46,17 @@ jobs:
             - "frontend-npm-packages"
       - run: cd frontend && npm i
       # Collecting test metadata https://circleci.com/docs/2.0/collect-test-data/#jest
-      - run:
-          name: Install JUnit coverage reporter
-          command: cd frontend && yarn add --dev jest-junit
-      - run:
-          name: Run tests with JUnit as reporter
-          command: cd frontend && jest --ci --runInBand --reporters=default --reporters=jest-junit
-          environment:
-            JEST_JUNIT_OUTPUT_DIR: ./reports/junit/
-      - store_test_results:
-          path: ./reports/junit/
+      - run: cd frontend && npm run test
+      # - run:
+      #     name: Install JUnit coverage reporter
+      #     command: cd frontend && yarn add --dev jest-junit
+      # - run:
+      #     name: Run tests with JUnit as reporter
+      #     command: cd frontend && jest --ci --runInBand --reporters=default --reporters=jest-junit
+      #     environment:
+      #       JEST_JUNIT_OUTPUT_DIR: ./reports/junit/
+      # - store_test_results:
+      #     path: ./reports/junit/
 
   test-backend:
     docker:
@@ -67,16 +68,17 @@ jobs:
             - "backend-npm-packages"
       - run: cd backend && npm i
       # Collecting test metadata https://circleci.com/docs/2.0/collect-test-data/#jest
-      - run:
-          name: Install JUnit coverage reporter
-          command: cd backend && yarn add --dev jest-junit
-      - run:
-          name: Run tests with JUnit as reporter
-          command: cd backend && jest --ci --runInBand --reporters=default --reporters=jest-junit
-          environment:
-            JEST_JUNIT_OUTPUT_DIR: ./reports/junit/
-      - store_test_results:
-          path: ./reports/junit/
+      - run: cd backend && npm run test
+      # - run:
+      #     name: Install JUnit coverage reporter
+      #     command: cd backend && yarn add --dev jest-junit
+      # - run:
+      #     name: Run tests with JUnit as reporter
+      #     command: cd backend && jest --ci --runInBand --reporters=default --reporters=jest-junit
+      #     environment:
+      #       JEST_JUNIT_OUTPUT_DIR: ./reports/junit/
+      # - store_test_results:
+      #     path: ./reports/junit/
 
 #  can-frontend:
 
