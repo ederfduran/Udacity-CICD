@@ -36,9 +36,47 @@ jobs:
             - "/backend/node_modules"
           key: "backend-npm-packages"
 
-#  test-frontend:
+  test-frontend:
+    docker:
+      - image: circleci/node:13.8.0
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - "frontend-npm-packages"
+      - run: cd frontend && npm i
+      # Collecting test metadata https://circleci.com/docs/2.0/collect-test-data/#jest
+      - run:
+          name: Install JUnit coverage reporter
+          command: cd frontend && npm i jest-junit --save-dev
+      - run:
+          name: Run tests with JUnit as reporter
+          command: cd frontend && jest --ci --runInBand --reporters=default --reporters=jest-junit
+          environment:
+            JEST_JUNIT_OUTPUT_DIR: ./reports/junit/
+      - store_test_results:
+          path: ./reports/junit/
 
-#  est-backend:
+  test-backend:
+    docker:
+      - image: circleci/node:13.8.0
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - "backend-npm-packages"
+      - run: cd backend && npm i
+      # Collecting test metadata https://circleci.com/docs/2.0/collect-test-data/#jest
+      - run:
+          name: Install JUnit coverage reporter
+          command: cd backend && npm i jest-junit --save-dev
+      - run:
+          name: Run tests with JUnit as reporter
+          command: cd backend && jest --ci --runInBand --reporters=default --reporters=jest-junit
+          environment:
+            JEST_JUNIT_OUTPUT_DIR: ./reports/junit/
+      - store_test_results:
+          path: ./reports/junit/
 
 #  can-frontend:
 
@@ -63,3 +101,9 @@ workflows:
     jobs:
       - build-frontend
       - build-backend
+      - test-frontend:
+          requires:
+            - build-frontend
+      - test-backend:
+          requires:
+            - build-backend
