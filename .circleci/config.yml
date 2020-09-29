@@ -58,7 +58,6 @@ jobs:
           keys:
             - "backend-npm-packages"
       - run: cd backend && npm i && npm run build && npm run test
-      - run: return 1
       - slack/status:
           fail_only: true
           mentions: "Eder D"
