@@ -58,10 +58,11 @@ jobs:
           keys:
             - "backend-npm-packages"
       - run: cd backend && npm i && npm run build && npm run test
-      - run: exit 0
+      - run: return 1
       - slack/status:
           fail_only: true
           mentions: "Eder D"
+          only_for_branches: master
 
   analyze-frontend:
     docker:
