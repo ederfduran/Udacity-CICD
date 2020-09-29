@@ -56,9 +56,25 @@ jobs:
             - "backend-npm-packages"
       - run: cd backend && npm i && npm run build && npm run test
 
-#  can-frontend:
+  analyze-frontend:
+    docker:
+      - image: circleci/node:13.8.0
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - "frontend-npm-packages"
+      - run: cd frontend && npm audit --audit-level=critical
 
-#  scan-backend:
+  analyze-backend:
+    docker:
+      - image: circleci/node:13.8.0
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - "backend-npm-packages"
+      - run: cd backend && npm audit --audit-level=critical
 
 #  deploy-infrastructure:
 
@@ -85,3 +101,9 @@ workflows:
       - test-backend:
           requires:
             - build-backend
+      - analyze-frontend:
+          requires:
+            - test-frontend
+      - analyze-backend:
+          requires:
+            - test-backend
