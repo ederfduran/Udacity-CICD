@@ -103,22 +103,24 @@ jobs:
             echo $MY_HOST
             curl -H "Content-Type: text/plain" -H "token: 768912b5-5c92-46aa-b355-373c449e2c91" --request PUT --data "${MY_HOST}" https://api.memstash.io/values/backend_host
 
-  # deploy_frontend_infra:
-  #   docker:
-  #     - image: amazon/aws-cli
-  #   steps:
-  #     - checkout
-  #     - run:
-  #         name: Save Old bucket
-  #         command: |
-  #           echo 'export MY_HOST=$(aws ec2 describe-instances --query 'Reservations[*].Instances[*].PublicIpAddress' --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" --region us-west-1 -- --output text)' >> $BASH_ENV
-
-  #     - run: |
-  #         aws cloudformation deploy \
-  #           --template-file .circleci/files/frontend.yml \
-  #           --stack-name "udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}" \
-  #           --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}"
-  #           --tags project=udapeople
+  deploy_frontend_infra:
+    docker:
+      - image: amazon/aws-cli
+    steps:
+      - checkout
+      - run:
+          name: Save Old bucket
+          command: |
+            echo 'export MY_OLD_BUCKET=$(aws s3api list-buckets --query 'Buckets[?starts_with(Name, `udapeople-frontend-`) == `true`].[Name]' --output text)' >> $BASH_ENV
+            source $BASH_ENV
+            echo $MY_OLD_BUCKET
+            curl -H "Content-Type: text/plain" -H "token: 768912b5-5c92-46aa-b355-373c449e2c91" --request PUT --data "${MY_OLD_BUCKET}" https://api.memstash.io/values/old_bucket
+      - run: |
+          aws cloudformation deploy \
+            --template-file .circleci/files/frontend.yml \
+            --stack-name "udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}" \
+            --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}"
+            --tags project=udapeople
 
 #  configure-infrastructure:
 
@@ -150,3 +152,4 @@ workflows:
           requires:
             - test-backend
       - deploy_backend_infra
+      - deploy_frontend_infra
