@@ -83,7 +83,41 @@ jobs:
             - "backend-npm-packages"
       - run: cd backend && npm i && npm audit fix --audit-level=critical --force
 
-#  deploy-infrastructure:
+  #  deploy-infrastructure:
+  deploy_backend_infra:
+    docker:
+      - image: amazon/aws-cli
+    steps:
+      - checkout
+      - run: |
+          aws cloudformation deploy \
+            --template-file .circleci/files/backend.yml \
+            --stack-name "udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}" \
+            --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}" \
+            --tags project=udapeople
+      - run:
+          name: Get backend Server Ip
+          command: |
+            echo 'export MY_HOST=$(aws ec2 describe-instances --query 'Reservations[*].Instances[*].PublicIpAddress' --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" --region us-west-1 -- --output text)' >> $BASH_ENV
+            source $BASH_ENV
+            curl -H "Content-Type: text/plain" -H "token: 768912b5-5c92-46aa-b355-373c449e2c91" --request PUT --data "${MY_HOST}" https://api.memstash.io/values/backend_host
+
+  # deploy_frontend_infra:
+  #   docker:
+  #     - image: amazon/aws-cli
+  #   steps:
+  #     - checkout
+  #     - run:
+  #         name: Save Old bucket
+  #         command: |
+  #           echo 'export MY_HOST=$(aws ec2 describe-instances --query 'Reservations[*].Instances[*].PublicIpAddress' --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" --region us-west-1 -- --output text)' >> $BASH_ENV
+
+  #     - run: |
+  #         aws cloudformation deploy \
+  #           --template-file .circleci/files/frontend.yml \
+  #           --stack-name "udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}" \
+  #           --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}"
+  #           --tags project=udapeople
 
 #  configure-infrastructure:
 
@@ -114,3 +148,4 @@ workflows:
       - analyze-backend:
           requires:
             - test-backend
+      - deploy_backend_infra
