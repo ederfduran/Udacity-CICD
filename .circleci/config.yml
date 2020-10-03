@@ -185,8 +185,9 @@ workflows:
       # - analyze-backend:
       #     requires:
       #       - test-backend
-      - deploy_backend_infra
-      - configure-infrastructure:
-          requires:
-            - deploy_backend_infra
+      # - deploy_backend_infra
+      # - configure-infrastructure:
+      #     requires:
+      #       - deploy_backend_infra
       # - deploy_frontend_infra
+      - configure-infrastructure
