@@ -150,7 +150,7 @@ jobs:
           name: Install ansible
           command: |
             sudo pip install ansible
-            ansible --verion
+            ansible --version
       - run:
           name: Configure Server
           command: |
