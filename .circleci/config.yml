@@ -158,7 +158,8 @@ jobs:
           name: Configure Server
           command: |
             cd .circleci/ansible
-            echo -e "[defaults]\nhost_key_checking = False" > .ansible.cfg
+            echo -e "[defaults]\nhost_key_checking = False" > ansible.cfg
+            cat ansible.cfg
             ansible-playbook -i inventory main.yml
 #  run-migrations:
 
