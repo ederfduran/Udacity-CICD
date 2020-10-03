@@ -124,45 +124,67 @@ jobs:
   #             --stack-name "udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}" \
   #             --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}"
 
-  configure-infrastructure:
+  # configure-infrastructure:
+  #   docker:
+  #     - image: circleci/python:3.8
+  #   steps:
+  #     - checkout
+  #     - add_ssh_keys:
+  #         fingerprints: ["86:d2:7e:61:dc:36:52:3d:a6:8e:1b:94:5c:a5:19:9f"]
+  #     - run:
+  #         name: add host to inventory
+  #         command: |
+  #           cd .circleci/ansible
+  #           HOST=$(curl -H "token: 768912b5-5c92-46aa-b355-373c449e2c91" --request GET https://api.memstash.io/values/backend_host)
+  #           echo "" >> inventory
+  #           echo "${HOST}" >> inventory
+  #           cat inventory
+  #     - run:
+  #         name: build and zip backend
+  #         command: |
+  #           echo $PWD
+  #           sudo apt install zip
+  #           curl -sL https://deb.nodesource.com/setup_lts.x | sudo -E bash -
+  #           sudo apt-get install -y nodejs
+  #           cd backend && npm install && npm run build
+  #           cd dist && cp ../package.json . && zip -rq dist.zip *
+  #           mv dist.zip /home/circleci/project/.circleci/ansible/roles/configure-server/files
+  #     - run:
+  #         name: Install ansible
+  #         command: |
+  #           sudo pip install ansible
+  #           ansible --version
+  #     - run:
+  #         name: Configure Server
+  #         command: |
+  #           cd .circleci/ansible
+  #           echo -e "[defaults]\nhost_key_checking = False" > ansible.cfg
+  #           cat ansible.cfg
+  #           ansible-playbook -i inventory main.yml
+
+  run-migrations:
     docker:
-      - image: circleci/python:3.8
+      - image: circleci/node:13.8.0
     steps:
       - checkout
-      - add_ssh_keys:
-          fingerprints: ["86:d2:7e:61:dc:36:52:3d:a6:8e:1b:94:5c:a5:19:9f"]
       - run:
-          name: add host to inventory
+          name: Run migrations
           command: |
-            cd .circleci/ansible
-            HOST=$(curl -H "token: 768912b5-5c92-46aa-b355-373c449e2c91" --request GET https://api.memstash.io/values/backend_host) 
-            echo "" >> inventory
-            echo "${HOST}" >> inventory
-            cat inventory
+            cd backend
+            npm run migrations > migrations.log
+            cat migrations.log
       - run:
-          name: build and zip backend
+          name: Persist migrations status
           command: |
-            echo $PWD
-            sudo apt install zip
-            curl -sL https://deb.nodesource.com/setup_lts.x | sudo -E bash -
-            sudo apt-get install -y nodejs
-            cd backend && npm install && npm run build
-            cd dist && cp ../package.json . && zip -rq dist.zip *
-            mv dist.zip /home/circleci/project/.circleci/ansible/roles/configure-server/files
-      - run:
-          name: Install ansible
-          command: |
-            sudo pip install ansible
-            ansible --version
-      - run:
-          name: Configure Server
-          command: |
-            cd .circleci/ansible
-            echo -e "[defaults]\nhost_key_checking = False" > ansible.cfg
-            cat ansible.cfg
-            ansible-playbook -i inventory main.yml
-#  run-migrations:
-
+            cd backend
+            if grep -q "has been executed successfully." migrations.log
+            then
+              curl -H "Content-Type: text/plain" -H "token: 768912b5-5c92-46aa-b355-373c449e2c91" --request PUT --data "1" https://api.memstash.io/values/"${CIRCLE_WORKFLOW_ID:0:7}_migrations"
+              echo "${CIRCLE_WORKFLOW_ID:0:7}_migrations = 1"
+            else
+              curl -H "Content-Type: text/plain" -H "token: 768912b5-5c92-46aa-b355-373c449e2c91" --request PUT --data "0" https://api.memstash.io/values/"${CIRCLE_WORKFLOW_ID:0:7}_migrations"
+              echo "${CIRCLE_WORKFLOW_ID:0:7}_migrations = 0"
+            fi
 #  deploy-frontend:
 
 #  deploy-backend:
@@ -193,4 +215,4 @@ workflows:
       #     requires:
       #       - deploy_backend_infra
       # - deploy_frontend_infra
-      - configure-infrastructure
+      - run-migrations
