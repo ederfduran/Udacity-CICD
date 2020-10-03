@@ -144,21 +144,19 @@ jobs:
             curl -sL https://deb.nodesource.com/setup_lts.x | sudo -E bash -
             sudo apt-get install -y nodejs
             cd backend && npm install && npm run build
-            echo $PWD
             cd dist && cp ../package.json . && zip -rq dist.zip *
-            echo $PWD
             mv dist.zip /home/circleci/project/.circleci/ansible/roles/configure-server/files
       - run:
           name: Install ansible
           command: |
             sudo pip install ansible
-            echo ansible --verion
-      # - run:
-      #     name: Configure Server
-      #     command: |
-      #       cd .circleci/ansible
-      #       echo -e "[defaults]\nhost_key_checking = False" > .ansible.cfg
-      #       ansible-playbook -i inventory main.yml
+            ansible --verion
+      - run:
+          name: Configure Server
+          command: |
+            cd .circleci/ansible
+            echo -e "[defaults]\nhost_key_checking = False" > .ansible.cfg
+            ansible-playbook -i inventory main.yml
 #  run-migrations:
 
 #  deploy-frontend:
