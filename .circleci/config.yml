@@ -15,73 +15,73 @@ orbs:
 #     ...
 
 jobs:
-  build-frontend:
-    docker:
-      - image: circleci/node:13.8.0
-    steps:
-      - checkout
-      - run: cd frontend && npm i
-      - run: cd frontend && npm run build
-      - save_cache:
-          paths:
-            - "/frontend/node_modules"
-          key: "frontend-npm-packages"
+  # build-frontend:
+  #   docker:
+  #     - image: circleci/node:13.8.0
+  #   steps:
+  #     - checkout
+  #     - run: cd frontend && npm i
+  #     - run: cd frontend && npm run build
+  #     - save_cache:
+  #         paths:
+  #           - "/frontend/node_modules"
+  #         key: "frontend-npm-packages"
 
-  build-backend:
-    docker:
-      - image: circleci/node:13.8.0
-    steps:
-      - checkout
-      - run: cd backend && npm i
-      - run: cd backend && npm run build
-      - save_cache:
-          paths:
-            - "/backend/node_modules"
-          key: "backend-npm-packages"
+  # build-backend:
+  #   docker:
+  #     - image: circleci/node:13.8.0
+  #   steps:
+  #     - checkout
+  #     - run: cd backend && npm i
+  #     - run: cd backend && npm run build
+  #     - save_cache:
+  #         paths:
+  #           - "/backend/node_modules"
+  #         key: "backend-npm-packages"
 
-  test-frontend:
-    docker:
-      - image: circleci/node:13.8.0
-    steps:
-      - checkout
-      - restore_cache:
-          keys:
-            - "frontend-npm-packages"
-      - run: cd frontend && npm i && npm run build && npm run test
+  # test-frontend:
+  #   docker:
+  #     - image: circleci/node:13.8.0
+  #   steps:
+  #     - checkout
+  #     - restore_cache:
+  #         keys:
+  #           - "frontend-npm-packages"
+  #     - run: cd frontend && npm i && npm run build && npm run test
 
-  test-backend:
-    docker:
-      - image: circleci/node:13.8.0
-    steps:
-      - checkout
-      - restore_cache:
-          keys:
-            - "backend-npm-packages"
-      - run: cd backend && npm i && npm run build && npm run test
-      - slack/status:
-          fail_only: true
-          mentions: "Eder D"
-          only_for_branches: master
+  # test-backend:
+  #   docker:
+  #     - image: circleci/node:13.8.0
+  #   steps:
+  #     - checkout
+  #     - restore_cache:
+  #         keys:
+  #           - "backend-npm-packages"
+  #     - run: cd backend && npm i && npm run build && npm run test
+  #     - slack/status:
+  #         fail_only: true
+  #         mentions: "Eder D"
+  #         only_for_branches: master
 
-  analyze-frontend:
-    docker:
-      - image: circleci/node:13.8.0
-    steps:
-      - checkout
-      - restore_cache:
-          keys:
-            - "frontend-npm-packages"
-      - run: cd frontend && npm i && npm audit fix --audit-level=critical --force
+  # analyze-frontend:
+  #   docker:
+  #     - image: circleci/node:13.8.0
+  #   steps:
+  #     - checkout
+  #     - restore_cache:
+  #         keys:
+  #           - "frontend-npm-packages"
+  #     - run: cd frontend && npm i && npm audit fix --audit-level=critical --force
 
-  analyze-backend:
-    docker:
-      - image: circleci/node:13.8.0
-    steps:
-      - checkout
-      - restore_cache:
-          keys:
-            - "backend-npm-packages"
-      - run: cd backend && npm i && npm audit fix --audit-level=critical --force
+  # analyze-backend:
+  #   docker:
+  #     - image: circleci/node:13.8.0
+  #   steps:
+  #     - checkout
+  #     - restore_cache:
+  #         keys:
+  #           - "backend-npm-packages"
+  #     - run: cd backend && npm i && npm audit fix --audit-level=critical --force
 
   #  deploy-infrastructure:
   deploy_backend_infra:
@@ -103,30 +103,60 @@ jobs:
             echo $MY_HOST
             curl -H "Content-Type: text/plain" -H "token: 768912b5-5c92-46aa-b355-373c449e2c91" --request PUT --data "${MY_HOST}" https://api.memstash.io/values/backend_host
 
-  deploy_frontend_infra:
+  # deploy_frontend_infra:
+  #   docker:
+  #     - image: amazon/aws-cli
+  #   steps:
+  #     - checkout
+  #     - run:
+  #         name: Save Old bucket
+  #         command: |
+  #           MY_OLD_BUCKET=$(aws s3api list-buckets --query 'Buckets[?starts_with(Name, `udapeople`) == `true`].[Name]' --output text)
+  #           echo 'export MY_OLD_BUCKET=${MY_OLD_BUCKET}' >> $BASH_ENV
+  #           source $BASH_ENV
+  #           echo $MY_OLD_BUCKET
+  #           curl -H "Content-Type: text/plain" -H "token: 768912b5-5c92-46aa-b355-373c449e2c91" --request PUT --data "arn:aws:s3:::${MY_OLD_BUCKET}" https://api.memstash.io/values/old_bucket
+  #     - run:
+  #         name: deploy frontend infrastructure
+  #         command: |
+  #           aws cloudformation deploy \
+  #             --template-file .circleci/files/frontend.yml \
+  #             --stack-name "udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}" \
+  #             --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}"
+
+  configure-infrastructure:
     docker:
-      - image: amazon/aws-cli
+      - image: circleci/python:3.8
     steps:
       - checkout
+      - add_ssh_keys:
+          fingerprints: ["86:d2:7e:61:dc:36:52:3d:a6:8e:1b:94:5c:a5:19:9f"]
       - run:
-          name: Save Old bucket
+          name: add host to inventory
           command: |
-            MY_OLD_BUCKET=$(aws s3api list-buckets --query 'Buckets[?starts_with(Name, `udapeople`) == `true`].[Name]' --output text)
-            echo 'export MY_OLD_BUCKET=${MY_OLD_BUCKET}' >> $BASH_ENV
-            source $BASH_ENV
-            echo $MY_OLD_BUCKET
-            curl -H "Content-Type: text/plain" -H "token: 768912b5-5c92-46aa-b355-373c449e2c91" --request PUT --data "${MY_OLD_BUCKET}" https://api.memstash.io/values/old_bucket
+            cd .circleci/ansible
+            curl -H "token: 768912b5-5c92-46aa-b355-373c449e2c91" --request GET https://api.memstash.io/values/backend_host >> inventory
       - run:
-          name: deploy frontend infrastructure
+          name: build and zip backend
           command: |
-            aws cloudformation deploy \
-              --template-file .circleci/files/frontend.yml \
-              --stack-name "udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}" \
-              --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}"
-              --tags project=udapeople
-
-#  configure-infrastructure:
-
+            sudo apt install zip
+            cd backend && npm i && npm build
+            cd dist
+            cp ../package.json
+            zip -rq dist.zip *
+            echo $PWD
+            mv dist.zip ../../.circleci/ansible/roles/configure-server/files
+      - run:
+          name: Install ansible
+          command: |
+            sudo pip install ansible
+            echo ansible --verion
+      # - run:
+      #     name: Configure Server
+      #     command: |
+      #       cd .circleci/ansible
+      #       echo -e "[defaults]\nhost_key_checking = False" > .ansible.cfg
+      #       ansible-playbook -i inventory main.yml
 #  run-migrations:
 
 #  deploy-frontend:
@@ -140,19 +170,19 @@ jobs:
 workflows:
   default:
     jobs:
-      - build-frontend
-      - build-backend
-      - test-frontend:
-          requires:
-            - build-frontend
-      - test-backend:
-          requires:
-            - build-backend
-      - analyze-frontend:
-          requires:
-            - test-frontend
-      - analyze-backend:
-          requires:
-            - test-backend
+      # - build-frontend
+      # - build-backend
+      # - test-frontend:
+      #     requires:
+      #       - build-frontend
+      # - test-backend:
+      #     requires:
+      #       - build-backend
+      # - analyze-frontend:
+      #     requires:
+      #       - test-frontend
+      # - analyze-backend:
+      #     requires:
+      #       - test-backend
       - deploy_backend_infra
-      - deploy_frontend_infra
+      # - deploy_frontend_infra
