@@ -143,10 +143,11 @@ jobs:
             sudo apt install zip
             curl -sL https://deb.nodesource.com/setup_lts.x | sudo -E bash -
             sudo apt-get install -y nodejs
-            cd backend && npm i && npm build
+            cd backend && npm install && npm run build
             echo $PWD
-            cd backend/dist && cp ../package.json && zip -rq dist.zip *
-            mv backend/dist/dist.zip .circleci/ansible/roles/configure-server/files
+            cd dist && cp ../package.json && zip -rq dist.zip *
+            mv dist.zip /home/circleci/project/.circleci/ansible/roles/configure-server/files
+            echo $PWD
       - run:
           name: Install ansible
           command: |
