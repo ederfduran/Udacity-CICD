@@ -145,9 +145,9 @@ jobs:
             sudo apt-get install -y nodejs
             cd backend && npm install && npm run build
             echo $PWD
-            cd dist && cp ../package.json && zip -rq dist.zip *
-            mv dist.zip /home/circleci/project/.circleci/ansible/roles/configure-server/files
+            cd dist && cp ../package.json . && zip -rq dist.zip *
             echo $PWD
+            mv dist.zip /home/circleci/project/.circleci/ansible/roles/configure-server/files
       - run:
           name: Install ansible
           command: |
