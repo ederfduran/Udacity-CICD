@@ -226,7 +226,7 @@ jobs:
             cd frontend/dist
             pip install awscli
             aws --version
-            aws s3 sync . s3://"${CIRCLE_WORKFLOW_ID:0:7}" --delete
+            aws s3 sync . s3://"udapeople-${CIRCLE_WORKFLOW_ID:0:7}" --delete
       - run:
           name: Set Cloudfront Distribution
           command: |
@@ -234,8 +234,6 @@ jobs:
             --template-file .circleci/files/cloudfront.yml \
             --stack-name "cloudfront_${CIRCLE_WORKFLOW_ID:0:7}" \
             --parameter-overrides WorkflowID="${CIRCLE_WORKFLOW_ID:0:7}"
-
-      - run: aws s3 sync . s3://"udapeople-${CIRCLE_WORKFLOW_ID:0:7}" --delete
 
 #  smoke-test:
 
