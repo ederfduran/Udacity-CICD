@@ -224,12 +224,12 @@ jobs:
           name: Update Frontend files
           command: |
             cd frontend/dist
+            pip install awscli
+            aws --version
             aws s3 sync . s3://"${CIRCLE_WORKFLOW_ID:0:7}" --delete
       - run:
           name: Set Cloudfront Distribution
           command: |
-            pip install awscli
-            aws --version
             aws cloudformation deploy \
             --template-file .circleci/files/cloudfront.yml \
             --stack-name "cloudfront_${CIRCLE_WORKFLOW_ID:0:7}" \
