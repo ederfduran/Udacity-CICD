@@ -84,83 +84,83 @@ jobs:
   #     - run: cd backend && npm i && npm audit fix --audit-level=critical --force
 
   #  deploy-infrastructure:
-  # deploy_backend_infra:
-  #   docker:
-  #     - image: amazon/aws-cli
-  #   steps:
-  #     - checkout
-  #     - run: |
-  #         aws cloudformation deploy \
-  #           --template-file .circleci/files/backend.yml \
-  #           --stack-name "udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}" \
-  #           --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}" \
-  #           --tags project=udapeople
-  #     - run:
-  #         name: Get backend Server Ip
-  #         command: |
-  #           echo 'export MY_HOST=$(aws ec2 describe-instances --query 'Reservations[*].Instances[*].PublicIpAddress' --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" --region us-west-1 --output text)' >> $BASH_ENV
-  #           source $BASH_ENV
-  #           echo $MY_HOST
-  #           curl -H "Content-Type: text/plain" -H "token: 768912b5-5c92-46aa-b355-373c449e2c91" --request PUT --data "${MY_HOST}" https://api.memstash.io/values/backend_host
+  deploy_backend_infra:
+    docker:
+      - image: amazon/aws-cli
+    steps:
+      - checkout
+      - run: |
+          aws cloudformation deploy \
+            --template-file .circleci/files/backend.yml \
+            --stack-name "udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}" \
+            --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}" \
+            --tags project=udapeople
+      - run:
+          name: Get backend Server Ip
+          command: |
+            echo 'export MY_HOST=$(aws ec2 describe-instances --query 'Reservations[*].Instances[*].PublicIpAddress' --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" --region us-west-1 --output text)' >> $BASH_ENV
+            source $BASH_ENV
+            echo $MY_HOST
+            curl -H "Content-Type: text/plain" -H "token: 768912b5-5c92-46aa-b355-373c449e2c91" --request PUT --data "${MY_HOST}" https://api.memstash.io/values/backend_host
 
-  # deploy_frontend_infra:
-  #   docker:
-  #     - image: amazon/aws-cli
-  #   steps:
-  #     - checkout
-  #     - run:
-  #         name: Save Old bucket
-  #         command: |
-  #           MY_OLD_BUCKET=$(aws s3api list-buckets --query 'Buckets[?starts_with(Name, `udapeople`) == `true`].[Name]' --output text)
-  #           echo 'export MY_OLD_BUCKET=${MY_OLD_BUCKET}' >> $BASH_ENV
-  #           source $BASH_ENV
-  #           echo $MY_OLD_BUCKET
-  #           curl -H "Content-Type: text/plain" -H "token: 768912b5-5c92-46aa-b355-373c449e2c91" --request PUT --data "arn:aws:s3:::${MY_OLD_BUCKET}" https://api.memstash.io/values/old_bucket
-  #     - run:
-  #         name: deploy frontend infrastructure
-  #         command: |
-  #           aws cloudformation deploy \
-  #             --template-file .circleci/files/frontend.yml \
-  #             --stack-name "udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}" \
-  #             --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}"
+  deploy_frontend_infra:
+    docker:
+      - image: amazon/aws-cli
+    steps:
+      - checkout
+      - run:
+          name: Save Old bucket
+          command: |
+            MY_OLD_BUCKET=$(aws s3api list-buckets --query 'Buckets[?starts_with(Name, `udapeople`) == `true`].[Name]' --output text)
+            echo 'export MY_OLD_BUCKET=${MY_OLD_BUCKET}' >> $BASH_ENV
+            source $BASH_ENV
+            echo $MY_OLD_BUCKET
+            curl -H "Content-Type: text/plain" -H "token: 768912b5-5c92-46aa-b355-373c449e2c91" --request PUT --data "arn:aws:s3:::${MY_OLD_BUCKET}" https://api.memstash.io/values/old_bucket
+      - run:
+          name: deploy frontend infrastructure
+          command: |
+            aws cloudformation deploy \
+              --template-file .circleci/files/frontend.yml \
+              --stack-name "udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}" \
+              --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}"
 
-  # configure-infrastructure:
-  #   docker:
-  #     - image: circleci/python:3.8
-  #   steps:
-  #     - checkout
-  #     - add_ssh_keys:
-  #         fingerprints: ["86:d2:7e:61:dc:36:52:3d:a6:8e:1b:94:5c:a5:19:9f"]
-  #     - run:
-  #         name: add host to inventory
-  #         command: |
-  #           cd .circleci/ansible
-  #           HOST=$(curl -H "token: 768912b5-5c92-46aa-b355-373c449e2c91" --request GET https://api.memstash.io/values/backend_host)
-  #           echo "" >> inventory
-  #           echo "${HOST}" >> inventory
-  #           cat inventory
-  #     - run:
-  #         name: build and zip backend
-  #         command: |
-  #           echo $PWD
-  #           sudo apt install zip
-  #           curl -sL https://deb.nodesource.com/setup_lts.x | sudo -E bash -
-  #           sudo apt-get install -y nodejs
-  #           cd backend && npm install && npm run build
-  #           cd dist && cp ../package.json . && zip -rq dist.zip *
-  #           mv dist.zip /home/circleci/project/.circleci/ansible/roles/configure-server/files
-  #     - run:
-  #         name: Install ansible
-  #         command: |
-  #           sudo pip install ansible
-  #           ansible --version
-  #     - run:
-  #         name: Configure Server
-  #         command: |
-  #           cd .circleci/ansible
-  #           echo -e "[defaults]\nhost_key_checking = False" > ansible.cfg
-  #           cat ansible.cfg
-  #           ansible-playbook -i inventory main.yml
+  configure-infrastructure:
+    docker:
+      - image: circleci/python:3.8
+    steps:
+      - checkout
+      - add_ssh_keys:
+          fingerprints: ["86:d2:7e:61:dc:36:52:3d:a6:8e:1b:94:5c:a5:19:9f"]
+      - run:
+          name: add host to inventory
+          command: |
+            cd .circleci/ansible
+            HOST=$(curl -H "token: 768912b5-5c92-46aa-b355-373c449e2c91" --request GET https://api.memstash.io/values/backend_host)
+            echo "" >> inventory
+            echo "${HOST}" >> inventory
+            cat inventory
+      - run:
+          name: build and zip backend
+          command: |
+            echo $PWD
+            sudo apt install zip
+            curl -sL https://deb.nodesource.com/setup_lts.x | sudo -E bash -
+            sudo apt-get install -y nodejs
+            cd backend && npm install && npm run build
+            cd dist && cp ../package.json . && zip -rq dist.zip *
+            mv dist.zip /home/circleci/project/.circleci/ansible/roles/configure-server/files
+      - run:
+          name: Install ansible
+          command: |
+            sudo pip install ansible
+            ansible --version
+      - run:
+          name: Configure Server
+          command: |
+            cd .circleci/ansible
+            echo -e "[defaults]\nhost_key_checking = False" > ansible.cfg
+            cat ansible.cfg
+            ansible-playbook -i inventory main.yml
 
   run-migrations:
     docker:
@@ -199,13 +199,43 @@ jobs:
               curl -H "Content-Type: text/plain" -H "token: 768912b5-5c92-46aa-b355-373c449e2c91" --request PUT --data "0" https://api.memstash.io/values/"${CIRCLE_WORKFLOW_ID:0:7}_migrations"
               echo "${CIRCLE_WORKFLOW_ID:0:7}_migrations = 0"
             fi
-#  deploy-frontend:
 
-#  deploy-backend:
+  cloudfront-update:
+    docker:
+      - image: amazon/aws-cli
+    steps:
+      - checkout
+      - run:
+          name: Set API_URL
+          command: |
+            HOST=$(curl -H "token: 768912b5-5c92-46aa-b355-373c449e2c91" --request GET https://api.memstash.io/values/backend_host)
+            echo 'export API_URL=${HOST}' >> $BASH_ENV
+            source $BASH_ENV
+            echo $API_URL
+      - run:
+          name: Re-Compile frontend
+          command: |
+            echo $API_URL
+            curl -sL https://deb.nodesource.com/setup_lts.x | sudo -E bash -
+            sudo apt-get install -y nodejs
+            cd frontend
+            npm run build
+      - run:
+          name: Update Frontend files
+          command: |
+            cd frontend/dist
+            aws s3 sync . s3://"${CIRCLE_WORKFLOW_ID:0:7}" --delete
+      - run:
+          name: Set Cloudfront Distribution
+          command: |
+            aws cloudformation deploy \
+            --template-file .circleci/files/cloudfront.yml \
+            --stack-name "cloudfront_${CIRCLE_WORKFLOW_ID:0:7}" \
+            --parameter-overrides WorkflowID="${CIRCLE_WORKFLOW_ID:0:7}"
+
+      - run: aws s3 sync . s3://"udapeople-${CIRCLE_WORKFLOW_ID:0:7}" --delete
 
 #  smoke-test:
-
-#  cloudfront-update:
 
 workflows:
   default:
@@ -224,9 +254,16 @@ workflows:
       # - analyze-backend:
       #     requires:
       #       - test-backend
-      # - deploy_backend_infra
-      # - configure-infrastructure:
-      #     requires:
-      #       - deploy_backend_infra
-      # - deploy_frontend_infra
-      - run-migrations
+      - deploy_backend_infra
+      - run-migrations:
+          requires:
+            - deploy_backend_infra
+      - configure-infrastructure:
+          requires:
+            - deploy_backend_infra
+      - deploy_frontend_infra:
+          requires:
+            - configure-infrastructure
+      - cloudfront-update:
+          requires:
+            - deploy_frontend_infra
