@@ -235,7 +235,33 @@ jobs:
             --stack-name "udapeople-cloudfront-${CIRCLE_WORKFLOW_ID:0:7}" \
             --parameter-overrides WorkflowID="${CIRCLE_WORKFLOW_ID:0:7}"
 
-#  smoke-test:
+  smoke-test:
+    docker:
+      - image: amazon/aws-cli
+    steps:
+      - checkout
+      - run:
+          name: Set API_URL
+          command: |
+            HOST=$(curl -H "token: 768912b5-5c92-46aa-b355-373c449e2c91" --request GET https://api.memstash.io/values/backend_host)
+            echo 'export API_URL=${HOST}' >> $BASH_ENV
+            source $BASH_ENV
+            echo $API_URL
+      - run:
+          name: Check backend health
+          command: |
+            echo $API_URL
+            curl "http://${API_URL}:3030/api/status"
+      - run:
+          name: check frontend url
+          command: |
+            URL="http://udapeople-${CIRCLE_WORKFLOW_ID:0:7}.s3-website-us-west-1.amazonaws.com/#/employees"
+            if curl -s ${URL} | grep "Welcome"
+            then
+            return 1
+            else
+            return 0
+            fi
 
 workflows:
   default:
@@ -254,17 +280,19 @@ workflows:
       # - analyze-backend:
       #     requires:
       #       - test-backend
-      # - deploy_backend_infra
-      # - run-migrations:
-      #     requires:
-      #       - deploy_backend_infra
-      # - configure-infrastructure:
-      #     requires:
-      #       - deploy_backend_infra
-      # - deploy_frontend_infra:
-      #     requires:
-      #       - configure-infrastructure
-      - deploy_frontend_infra
+      - deploy_backend_infra
+      - run-migrations:
+          requires:
+            - deploy_backend_infra
+      - configure-infrastructure:
+          requires:
+            - deploy_backend_infra
+      - deploy_frontend_infra:
+          requires:
+            - configure-infrastructure
       - cloudfront-update:
           requires:
             - deploy_frontend_infra
+      - smoke-test:
+          requires:
+            - cloudfront-update
