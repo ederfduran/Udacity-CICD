@@ -15,73 +15,73 @@ orbs:
 #     ...
 
 jobs:
-  # build-frontend:
-  #   docker:
-  #     - image: circleci/node:13.8.0
-  #   steps:
-  #     - checkout
-  #     - run: cd frontend && npm i
-  #     - run: cd frontend && npm run build
-  #     - save_cache:
-  #         paths:
-  #           - "/frontend/node_modules"
-  #         key: "frontend-npm-packages"
+  build-frontend:
+    docker:
+      - image: circleci/node:13.8.0
+    steps:
+      - checkout
+      - run: cd frontend && npm i
+      - run: cd frontend && npm run build
+      - save_cache:
+          paths:
+            - "/frontend/node_modules"
+          key: "frontend-npm-packages"
 
-  # build-backend:
-  #   docker:
-  #     - image: circleci/node:13.8.0
-  #   steps:
-  #     - checkout
-  #     - run: cd backend && npm i
-  #     - run: cd backend && npm run build
-  #     - save_cache:
-  #         paths:
-  #           - "/backend/node_modules"
-  #         key: "backend-npm-packages"
+  build-backend:
+    docker:
+      - image: circleci/node:13.8.0
+    steps:
+      - checkout
+      - run: cd backend && npm i
+      - run: cd backend && npm run build
+      - save_cache:
+          paths:
+            - "/backend/node_modules"
+          key: "backend-npm-packages"
 
-  # test-frontend:
-  #   docker:
-  #     - image: circleci/node:13.8.0
-  #   steps:
-  #     - checkout
-  #     - restore_cache:
-  #         keys:
-  #           - "frontend-npm-packages"
-  #     - run: cd frontend && npm i && npm run build && npm run test
+  test-frontend:
+    docker:
+      - image: circleci/node:13.8.0
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - "frontend-npm-packages"
+      - run: cd frontend && npm i && npm run build && npm run test
 
-  # test-backend:
-  #   docker:
-  #     - image: circleci/node:13.8.0
-  #   steps:
-  #     - checkout
-  #     - restore_cache:
-  #         keys:
-  #           - "backend-npm-packages"
-  #     - run: cd backend && npm i && npm run build && npm run test
-  #     - slack/status:
-  #         fail_only: true
-  #         mentions: "Eder D"
-  #         only_for_branches: master
+  test-backend:
+    docker:
+      - image: circleci/node:13.8.0
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - "backend-npm-packages"
+      - run: cd backend && npm i && npm run build && npm run test
+      - slack/status:
+          fail_only: true
+          mentions: "Eder D"
+          only_for_branches: master
 
-  # analyze-frontend:
-  #   docker:
-  #     - image: circleci/node:13.8.0
-  #   steps:
-  #     - checkout
-  #     - restore_cache:
-  #         keys:
-  #           - "frontend-npm-packages"
-  #     - run: cd frontend && npm i && npm audit fix --audit-level=critical --force
+  analyze-frontend:
+    docker:
+      - image: circleci/node:13.8.0
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - "frontend-npm-packages"
+      - run: cd frontend && npm i && npm audit fix --audit-level=critical --force
 
-  # analyze-backend:
-  #   docker:
-  #     - image: circleci/node:13.8.0
-  #   steps:
-  #     - checkout
-  #     - restore_cache:
-  #         keys:
-  #           - "backend-npm-packages"
-  #     - run: cd backend && npm i && npm audit fix --audit-level=critical --force
+  analyze-backend:
+    docker:
+      - image: circleci/node:13.8.0
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - "backend-npm-packages"
+      - run: cd backend && npm i && npm audit fix --audit-level=critical --force
 
   #  deploy-infrastructure:
   deploy_backend_infra:
@@ -202,7 +202,7 @@ jobs:
 
   cloudfront-update:
     docker:
-      - image: amazon/aws-cli
+      - image: circleci/python:3.8
     steps:
       - checkout
       - run:
@@ -228,6 +228,8 @@ jobs:
       - run:
           name: Set Cloudfront Distribution
           command: |
+            pip install awscli
+            aws --version
             aws cloudformation deploy \
             --template-file .circleci/files/cloudfront.yml \
             --stack-name "cloudfront_${CIRCLE_WORKFLOW_ID:0:7}" \
@@ -254,16 +256,17 @@ workflows:
       # - analyze-backend:
       #     requires:
       #       - test-backend
-      - deploy_backend_infra
-      - run-migrations:
-          requires:
-            - deploy_backend_infra
-      - configure-infrastructure:
-          requires:
-            - deploy_backend_infra
-      - deploy_frontend_infra:
-          requires:
-            - configure-infrastructure
+      # - deploy_backend_infra
+      # - run-migrations:
+      #     requires:
+      #       - deploy_backend_infra
+      # - configure-infrastructure:
+      #     requires:
+      #       - deploy_backend_infra
+      # - deploy_frontend_infra:
+      #     requires:
+      #       - configure-infrastructure
+      - deploy_frontend_infra
       - cloudfront-update:
           requires:
             - deploy_frontend_infra
