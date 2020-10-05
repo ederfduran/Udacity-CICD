@@ -153,7 +153,7 @@ jobs:
           name: Install ansible
           command: |
             sudo pip install ansible
-            sudo apt install openssh-server
+            sudo apt-get install openssh-client
             ansible --version
       - run:
           name: Configure Server
