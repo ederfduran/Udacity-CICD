@@ -4,7 +4,6 @@
   user: ubuntu
   roles:
     - role: configure-server
-      become: true
   vars:
     environment_config:
       NODE_ENV: production

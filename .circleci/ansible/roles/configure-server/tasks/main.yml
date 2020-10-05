@@ -29,28 +29,23 @@
     production: yes
     state: present
 
-- name: "Install zip utility."
-  apt:
-    name: ["zip", "unzip"]
-    state: latest
-    update_cache: yes
+- name: "Move files to server"
+  copy:
+    src: /root/project/backend/
+    dest: /home/ubuntu/app
 
-- name: Creates directory
-  file:
-    path: ~/backend
-    state: directory
-
-- name: Unzip backend files
-  unarchive:
-    src: dist.zip
-    dest: ~/backend
-
-- name: "Executing node"
+- name: "Install app dependencies"
   shell: |
-    cd ~/backend
-    pm2 start main.js
-  register: execute_node
+    cd /home/ubuntu/app
+    npm install
 
-- name: debug message
-  debug:
-    msg: "{{ execute_node.stdout_lines }}"
+- name: "Build package"
+  shell: |
+    cd /home/ubuntu/app
+    npm run build
+
+- name: Start application
+  become: true
+  shell: |
+    cd /home/ubuntu/app
+    pm2 start npm --name backend -- run "start:prod"
