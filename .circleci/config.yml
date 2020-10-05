@@ -158,7 +158,8 @@ jobs:
           name: Configure Server
           command: |
             cd .circleci/ansible
-            echo -e "[defaults]\nhost_key_checking = False" > ansible.cfg
+            echo -e "[defaults]\nhost_key_checking = False\n" > ansible.cfg
+            echo -e "[ssh_connection]\nscp_if_ssh = True" >> ansible.cfg
             cat ansible.cfg
             ansible-playbook -i inventory main.yml
 
@@ -276,19 +277,20 @@ workflows:
       # - analyze-backend:
       #     requires:
       #       - test-backend
-      - deploy_backend_infra
-      - run-migrations:
-          requires:
-            - deploy_backend_infra
-      - configure-infrastructure:
-          requires:
-            - deploy_backend_infra
-      - deploy_frontend_infra:
-          requires:
-            - configure-infrastructure
-      - cloudfront-update:
-          requires:
-            - deploy_frontend_infra
-      - smoke-test:
-          requires:
-            - cloudfront-update
+      # - deploy_backend_infra
+      # - run-migrations:
+      #     requires:
+      #       - deploy_backend_infra
+      # - configure-infrastructure:
+      #     requires:
+      #       - deploy_backend_infra
+      # - deploy_frontend_infra:
+      #     requires:
+      #       - configure-infrastructure
+      # - cloudfront-update:
+      #     requires:
+      #       - deploy_frontend_infra
+      # - smoke-test:
+      #     requires:
+      #       - cloudfront-update
+      - configure-infrastructure
