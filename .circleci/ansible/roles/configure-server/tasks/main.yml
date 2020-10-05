@@ -31,7 +31,7 @@
 
 - name: "Move files to server"
   copy:
-    src: /root/project/backend/
+    src: /home/circleci/project/backend/
     dest: /home/ubuntu/app
 
 - name: "Install app dependencies"
