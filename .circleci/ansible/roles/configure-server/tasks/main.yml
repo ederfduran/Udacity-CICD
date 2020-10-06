@@ -38,13 +38,18 @@
     cd /home/ubuntu/app
     npm install
 
-- name: "Build package"
-  shell: |
-    cd /home/ubuntu/app
-    npm run build
+# - name: "Build package"
+#   shell: |
+#     cd /home/ubuntu/app
+#     npm run build
 
 - name: Start application
   become: true
   shell: |
     cd /home/ubuntu/app
-    pm2 start npm --name backend -- run "start:prod"
+    pm2 start npm --name backend -- run "start"
+  register: execute_node
+
+- name: debug message
+  debug:
+    msg: "{{ execute_node.stdout_lines }}"

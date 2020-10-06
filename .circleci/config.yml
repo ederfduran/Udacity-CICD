@@ -139,6 +139,20 @@ jobs:
             echo "" >> inventory
             echo "${HOST}" >> inventory
             cat inventory
+      - run:
+          name: Update ENV variables
+          command: |
+            echo "ENVIRONMENT=production" > backend/.env
+            echo "NODE_ENV=production" >> backend/.env
+            echo "TYPEORM_MIGRATIONS=$TYPEORM_MIGRATIONS" >> backend/.env
+            echo "TYPEORM_ENTITIES=$TYPEORM_ENTITIES" >> backend/.env
+            echo "TYPEORM_MIGRATIONS_DIR=$TYPEORM_MIGRATIONS_DIR" >> backend/.env
+            echo "TYPEORM_CONNECTION=$TYPEORM_CONNECTION" >> backend/.env
+            echo "TYPEORM_HOST=$TYPEORM_HOST" >> backend/.env
+            echo "TYPEORM_PORT=$TYPEORM_PORT" >> backend/.env
+            echo "TYPEORM_USERNAME=$TYPEORM_USERNAME" >> backend/.env
+            echo "TYPEORM_PASSWORD=$TYPEORM_PASSWORD" >> backend/.env
+            echo "TYPEORM_DATABASE=$TYPEORM_DATABASE" >> backend/.env
       # - run:
       #     name: build and zip backend
       #     command: |
@@ -294,4 +308,7 @@ workflows:
       # - smoke-test:
       #     requires:
       #       - cloudfront-update
-      - configure-infrastructure
+      - deploy_backend_infra
+      - configure-infrastructure:
+          requires:
+            - deploy_backend_infra
