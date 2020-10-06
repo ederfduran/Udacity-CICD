@@ -272,7 +272,7 @@ jobs:
             then
             return 1
             else
-            return 0
+            return 1
             fi
 
 workflows:
@@ -292,23 +292,19 @@ workflows:
       # - analyze-backend:
       #     requires:
       #       - test-backend
-      # - deploy_backend_infra
-      # - run-migrations:
-      #     requires:
-      #       - deploy_backend_infra
-      # - configure-infrastructure:
-      #     requires:
-      #       - deploy_backend_infra
-      # - deploy_frontend_infra:
-      #     requires:
-      #       - configure-infrastructure
-      # - cloudfront-update:
-      #     requires:
-      #       - deploy_frontend_infra
-      # - smoke-test:
-      #     requires:
-      #       - cloudfront-update
       - deploy_backend_infra
+      - run-migrations:
+          requires:
+            - deploy_backend_infra
       - configure-infrastructure:
           requires:
             - deploy_backend_infra
+      - deploy_frontend_infra:
+          requires:
+            - configure-infrastructure
+      - cloudfront-update:
+          requires:
+            - deploy_frontend_infra
+      - smoke-test:
+          requires:
+            - cloudfront-update
