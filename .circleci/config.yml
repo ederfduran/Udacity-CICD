@@ -5,14 +5,33 @@ orbs:
 
 ### It's a good practice to keep your commands at the top of the config file. In this project, you'll need at least 2 commands:
 
-# commands:
-#   destroy-environment:
-#     description: Destroy backend and frontend cloudformation stacks given a workflow ID.
-#     ...
+commands:
+  destroy-environment:
+    description: Destroy backend and frontend cloudformation stacks given a workflow ID.
+    steps:
+      - run:
+          name: delete Frontend stack
+          command: |
+            aws s3 rm s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} --recursive
+            aws cloudformation delete-stack "udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}"
+      - run:
+          name: delete backend stack
+          command: aws cloudformation delete-stack "udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}"
 
-#   revert-migration:
-#     description: Revert the last migration if successfully run in the current workflow.
-#     ...
+  revert-migration:
+    description: Revert the last migration if successfully run in the current workflow.
+    steps:
+      - run:
+          name: Revert migrations
+          command: |
+            WAS_MIGRATED=$(curl -H "token: 768912b5-5c92-46aa-b355-373c449e2c91" --request GET https://api.memstash.io/values/"${CIRCLE_WORKFLOW_ID:0:7}_migrations")
+            echo " Was Migrated = ${WAS_MIGRATED}"            
+            if [[ $WAS_MIGRATED -eq 1 ]]; then
+              echo "Start revert migrations"
+              cd backend
+              npm i
+              npm run migration:revert
+            fi
 
 jobs:
   build-frontend:
@@ -153,6 +172,14 @@ jobs:
             echo "TYPEORM_USERNAME=$TYPEORM_USERNAME" >> backend/.env
             echo "TYPEORM_PASSWORD=$TYPEORM_PASSWORD" >> backend/.env
             echo "TYPEORM_DATABASE=$TYPEORM_DATABASE" >> backend/.env
+      - run:
+          name: destroy environment
+          command: destroy-environment
+          when: on_fail
+      - run:
+          name: rollback migrations
+          command: revert-migration
+          when: on_fail
       # - run:
       #     name: build and zip backend
       #     command: |
@@ -250,6 +277,14 @@ jobs:
             --template-file .circleci/files/cloudfront.yml \
             --stack-name "udapeople-cloudfront-${CIRCLE_WORKFLOW_ID:0:7}" \
             --parameter-overrides WorkflowID="${CIRCLE_WORKFLOW_ID:0:7}"
+      - run:
+          name: destroy environment
+          command: destroy-environment
+          when: on_fail
+      - run:
+          name: rollback migrations
+          command: revert-migration
+          when: on_fail
 
   smoke-test:
     docker:
@@ -274,6 +309,14 @@ jobs:
             else
             return 1
             fi
+      - run:
+          name: destroy environment
+          command: destroy-environment
+          when: on_fail
+      - run:
+          name: rollback migrations
+          command: revert-migration
+          when: on_fail
 
 workflows:
   default:
