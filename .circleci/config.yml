@@ -6,7 +6,7 @@ orbs:
 ### It's a good practice to keep your commands at the top of the config file. In this project, you'll need at least 2 commands:
 
 commands:
-  destroy-environment:
+  destroy_environment:
     description: Destroy backend and frontend cloudformation stacks given a workflow ID.
     steps:
       - run:
@@ -18,7 +18,7 @@ commands:
           name: delete backend stack
           command: aws cloudformation delete-stack "udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}"
 
-  revert-migration:
+  revert_migration:
     description: Revert the last migration if successfully run in the current workflow.
     steps:
       - run:
@@ -174,11 +174,11 @@ jobs:
             echo "TYPEORM_DATABASE=$TYPEORM_DATABASE" >> backend/.env
       - run:
           name: destroy environment
-          command: destroy-environment
+          command: destroy_environment
           when: on_fail
       - run:
           name: rollback migrations
-          command: revert-migration
+          command: revert_migration
           when: on_fail
       # - run:
       #     name: build and zip backend
@@ -279,11 +279,11 @@ jobs:
             --parameter-overrides WorkflowID="${CIRCLE_WORKFLOW_ID:0:7}"
       - run:
           name: destroy environment
-          command: destroy-environment
+          command: destroy_environment
           when: on_fail
       - run:
           name: rollback migrations
-          command: revert-migration
+          command: revert_migration
           when: on_fail
 
   smoke-test:
@@ -311,11 +311,11 @@ jobs:
             fi
       - run:
           name: destroy environment
-          command: destroy-environment
+          command: destroy_environment
           when: on_fail
       - run:
           name: rollback migrations
-          command: revert-migration
+          command: revert_migration
           when: on_fail
 
 workflows:
