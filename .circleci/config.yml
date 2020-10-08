@@ -17,6 +17,7 @@ commands:
             aws cloudformation delete-stack --stack-name "udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}"
       - run:
           name: delete backend stack
+          when: on_fail
           command: aws cloudformation delete-stack --stack-name "udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}"
 
   revert_migration:
@@ -179,9 +180,6 @@ jobs:
           command: |
             pip install awscli
             aws --version
-      - destroy_environment
-      - revert_migration
-
       # - run:
       #     name: build and zip backend
       #     command: |
@@ -206,6 +204,8 @@ jobs:
             echo -e "[ssh_connection]\nscp_if_ssh = True" >> ansible.cfg
             cat ansible.cfg
             ansible-playbook -i inventory main.yml
+      - destroy_environment
+      - revert_migration
 
   run-migrations:
     docker:
