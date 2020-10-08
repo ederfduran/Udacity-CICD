@@ -11,6 +11,7 @@ commands:
     steps:
       - run:
           name: delete Frontend stack
+          when: on_fail
           command: |
             aws s3 rm s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} --recursive
             aws cloudformation delete-stack "udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}"
@@ -23,6 +24,7 @@ commands:
     steps:
       - run:
           name: Revert migrations
+          when: on_fail
           command: |
             WAS_MIGRATED=$(curl -H "token: 768912b5-5c92-46aa-b355-373c449e2c91" --request GET https://api.memstash.io/values/"${CIRCLE_WORKFLOW_ID:0:7}_migrations")
             echo " Was Migrated = ${WAS_MIGRATED}"            
@@ -172,10 +174,8 @@ jobs:
             echo "TYPEORM_USERNAME=$TYPEORM_USERNAME" >> backend/.env
             echo "TYPEORM_PASSWORD=$TYPEORM_PASSWORD" >> backend/.env
             echo "TYPEORM_DATABASE=$TYPEORM_DATABASE" >> backend/.env
-      - destroy_environment:
-          when: on_fail
-      - revert_migration:
-          when: on_fail
+      - destroy_environment
+      - revert_migration
 
       # - run:
       #     name: build and zip backend
@@ -274,10 +274,8 @@ jobs:
             --template-file .circleci/files/cloudfront.yml \
             --stack-name "udapeople-cloudfront-${CIRCLE_WORKFLOW_ID:0:7}" \
             --parameter-overrides WorkflowID="${CIRCLE_WORKFLOW_ID:0:7}"
-      - destroy_environment:
-          when: on_fail
-      - revert_migration:
-          when: on_fail
+      - destroy_environment
+      - revert_migration
 
   smoke-test:
     docker:
@@ -302,10 +300,8 @@ jobs:
             else
             return 1
             fi
-      - destroy_environment:
-          when: on_fail
-      - revert_migration:
-          when: on_fail
+      - destroy_environment
+      - revert_migration
 
 workflows:
   default:
