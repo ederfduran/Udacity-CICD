@@ -172,14 +172,11 @@ jobs:
             echo "TYPEORM_USERNAME=$TYPEORM_USERNAME" >> backend/.env
             echo "TYPEORM_PASSWORD=$TYPEORM_PASSWORD" >> backend/.env
             echo "TYPEORM_DATABASE=$TYPEORM_DATABASE" >> backend/.env
-      - run:
-          name: destroy environment
-          command: destroy_environment
+      - destroy_environment:
           when: on_fail
-      - run:
-          name: rollback migrations
-          command: revert_migration
+      - revert_migration:
           when: on_fail
+
       # - run:
       #     name: build and zip backend
       #     command: |
@@ -277,13 +274,9 @@ jobs:
             --template-file .circleci/files/cloudfront.yml \
             --stack-name "udapeople-cloudfront-${CIRCLE_WORKFLOW_ID:0:7}" \
             --parameter-overrides WorkflowID="${CIRCLE_WORKFLOW_ID:0:7}"
-      - run:
-          name: destroy environment
-          command: destroy_environment
+      - destroy_environment:
           when: on_fail
-      - run:
-          name: rollback migrations
-          command: revert_migration
+      - revert_migration:
           when: on_fail
 
   smoke-test:
@@ -309,13 +302,9 @@ jobs:
             else
             return 1
             fi
-      - run:
-          name: destroy environment
-          command: destroy_environment
+      - destroy_environment:
           when: on_fail
-      - run:
-          name: rollback migrations
-          command: revert_migration
+      - revert_migration:
           when: on_fail
 
 workflows:
