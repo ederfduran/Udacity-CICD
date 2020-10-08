@@ -127,17 +127,24 @@ jobs:
 
   deploy_frontend_infra:
     docker:
-      - image: amazon/aws-cli
+      - image: circleci/python:3.8
     steps:
       - checkout
       - run:
-          name: Save Old bucket
+          name: Set API_URL
           command: |
-            MY_OLD_BUCKET=$(aws s3api list-buckets --query 'Buckets[?starts_with(Name, `udapeople`) == `true`].[Name]' --output text)
-            echo 'export MY_OLD_BUCKET=${MY_OLD_BUCKET}' >> $BASH_ENV
+            HOST=$(curl -H "token: 768912b5-5c92-46aa-b355-373c449e2c91" --request GET https://api.memstash.io/values/backend_host)
+            echo 'export API_URL=${HOST}' >> $BASH_ENV
             source $BASH_ENV
-            echo $MY_OLD_BUCKET
-            curl -H "Content-Type: text/plain" -H "token: 768912b5-5c92-46aa-b355-373c449e2c91" --request PUT --data "arn:aws:s3:::${MY_OLD_BUCKET}" https://api.memstash.io/values/old_bucket
+            echo $API_URL
+      - run:
+          name: package frontend artifact
+          command: |
+            echo $API_URL
+            curl -sL https://deb.nodesource.com/setup_lts.x | sudo -E bash -
+            sudo apt-get install -y nodejs
+            cd frontend
+            npm i && npm run build
       - run:
           name: deploy frontend infrastructure
           command: |
@@ -145,6 +152,15 @@ jobs:
               --template-file .circleci/files/frontend.yml \
               --stack-name "udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}" \
               --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}"
+      - run:
+          name: Update Frontend files
+          command: |
+            cd frontend/dist
+            pip install awscli
+            aws --version
+            aws s3 sync . s3://"udapeople-${CIRCLE_WORKFLOW_ID:0:7}" --delete
+      - destroy_environment
+      - revert_migration
 
   configure-infrastructure:
     docker:
@@ -244,34 +260,13 @@ jobs:
               curl -H "Content-Type: text/plain" -H "token: 768912b5-5c92-46aa-b355-373c449e2c91" --request PUT --data "0" https://api.memstash.io/values/"${CIRCLE_WORKFLOW_ID:0:7}_migrations"
               echo "${CIRCLE_WORKFLOW_ID:0:7}_migrations = 0"
             fi
+      - destroy_environment
 
   cloudfront-update:
     docker:
       - image: circleci/python:3.8
     steps:
       - checkout
-      - run:
-          name: Set API_URL
-          command: |
-            HOST=$(curl -H "token: 768912b5-5c92-46aa-b355-373c449e2c91" --request GET https://api.memstash.io/values/backend_host)
-            echo 'export API_URL=${HOST}' >> $BASH_ENV
-            source $BASH_ENV
-            echo $API_URL
-      - run:
-          name: Re-Compile frontend
-          command: |
-            echo $API_URL
-            curl -sL https://deb.nodesource.com/setup_lts.x | sudo -E bash -
-            sudo apt-get install -y nodejs
-            cd frontend
-            npm i && npm run build
-      - run:
-          name: Update Frontend files
-          command: |
-            cd frontend/dist
-            pip install awscli
-            aws --version
-            aws s3 sync . s3://"udapeople-${CIRCLE_WORKFLOW_ID:0:7}" --delete
       - run:
           name: Set Cloudfront Distribution
           command: |
@@ -301,7 +296,7 @@ jobs:
             URL="http://udapeople-${CIRCLE_WORKFLOW_ID:0:7}.s3-website-us-west-1.amazonaws.com/#/employees"
             if curl -s ${URL} | grep "Welcome"
             then
-            return 1
+            return 0
             else
             return 1
             fi
@@ -335,9 +330,9 @@ workflows:
       - deploy_frontend_infra:
           requires:
             - configure-infrastructure
-      - cloudfront-update:
+      - smoke-test:
           requires:
             - deploy_frontend_infra
-      - smoke-test:
+      - cloudfront-update:
           requires:
             - cloudfront-update
