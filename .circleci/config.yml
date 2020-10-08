@@ -335,4 +335,4 @@ workflows:
             - deploy_frontend_infra
       - cloudfront-update:
           requires:
-            - cloudfront-update
+            - smoke-test
