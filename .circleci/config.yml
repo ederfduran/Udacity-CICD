@@ -267,9 +267,10 @@ jobs:
 
   smoke-test:
     docker:
-      - image: amazon/aws-cli
+      - image: circleci/python:3.8
     steps:
       - checkout
+      - run: pip install awscli
       - run:
           name: Check backend health
           command: |
@@ -284,9 +285,9 @@ jobs:
             URL="http://udapeople-${CIRCLE_WORKFLOW_ID:0:7}.s3-website-us-west-1.amazonaws.com/#/employees"
             if curl -s ${URL} | grep "Welcome" 
             then 
-            return 1 
-            else 
             return 0 
+            else 
+            return 1 
             fi
       - destroy_environment
       - revert_migration
