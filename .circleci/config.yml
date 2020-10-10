@@ -340,9 +340,10 @@ workflows:
       # - analyze-backend:
       #     requires:
       #       - test-backend
-      - deploy_backend_infra:
-          filters:
-            branches: only:[master]
+      - deploy_backend_infra
+        # filters:
+        #   branches:
+        #     only:[master]
       - run-migrations:
           requires:
             - deploy_backend_infra
