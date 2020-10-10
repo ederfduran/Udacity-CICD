@@ -315,13 +315,13 @@ jobs:
               --parameter-overrides WorkflowID="${CIRCLE_WORKFLOW_ID:0:7}" \
               --tags project=udapeople &
 
-            if [[ "${STACKS[@]}" =~ "${OLD_WORKFLOW_ID}" ]] 
-            then
-              echo "Removing previous stack"
-              aws s3 rm "s3://udapeople-${OLD_WORKFLOW_ID}" --recursive
-              aws cloudformation delete-stack --stack-name "udapeople-backend-${OLD_WORKFLOW_ID}"
-              aws cloudformation delete-stack --stack-name "udapeople-frontend-${OLD_WORKFLOW_ID}"
-            fi
+          # if [[ "${STACKS[@]}" =~ "${OLD_WORKFLOW_ID}" ]]
+          # then
+          #   echo "Removing previous stack"
+          #   aws s3 rm "s3://udapeople-${OLD_WORKFLOW_ID}" --recursive
+          #   aws cloudformation delete-stack --stack-name "udapeople-backend-${OLD_WORKFLOW_ID}"
+          #   aws cloudformation delete-stack --stack-name "udapeople-frontend-${OLD_WORKFLOW_ID}"
+          # fi
 
 workflows:
   default:
