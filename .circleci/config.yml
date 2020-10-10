@@ -299,7 +299,7 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Deploy the backend infrastructure using cloudformation
+          name: Update Cloudfront Distribution.
           command: |
             OLD_WORKFLOW_ID=$(aws cloudformation \
               list-exports --query "Exports[?Name==\`WorkflowID\`].Value" \
@@ -340,7 +340,9 @@ workflows:
       # - analyze-backend:
       #     requires:
       #       - test-backend
-      - deploy_backend_infra
+      - deploy_backend_infra:
+          filters:
+            branches: only:[master]
       - run-migrations:
           requires:
             - deploy_backend_infra
@@ -353,6 +355,7 @@ workflows:
       - smoke-test:
           requires:
             - deploy_frontend_infra
+            - deploy_backend_infra
       - cloudfront-update:
           requires:
             - smoke-test
