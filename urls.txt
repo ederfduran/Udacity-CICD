@@ -1,0 +1,14 @@
+1. Public Url to GitHub repository  (not private) [URL01]:
+https://github.com/ederfduran/Udacity-CICD
+
+2. Public URL for your S3 Bucket (aka, your green candidate front-end) [URL02]:
+http://udapeople-a6bd85d.s3-website-us-west-1.amazonaws.com
+
+3. Public URL for your CloudFront distribution (aka, your blue production front-end) [URL03]:
+d3gtlykpqrd3ti.cloudfront.net
+
+4. Public URLs to deployed application back-end in EC2 [URL04]:
+http://ec2-13-52-217-38.us-west-1.compute.amazonaws.com:3030
+
+5. Public URL to your Prometheus Server [URL05]:
+http://ec2-54-241-211-55.us-west-1.compute.amazonaws.com:9090/targets
