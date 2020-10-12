@@ -323,24 +323,27 @@ jobs:
 workflows:
   default:
     jobs:
-      # - build-frontend
-      # - build-backend
-      # - test-frontend:
-      #     requires:
-      #       - build-frontend
-      # - test-backend:
-      #     requires:
-      #       - build-backend
-      # - analyze-frontend:
-      #     requires:
-      #       - test-frontend
-      # - analyze-backend:
-      #     requires:
-      #       - test-backend
-      - deploy_backend_infra
-        # filters:
-        #   branches:
-        #     only:[master]
+      - build-frontend
+      - build-backend
+      - test-frontend:
+          requires:
+            - build-frontend
+      - test-backend:
+          requires:
+            - build-backend
+      - analyze-frontend:
+          requires:
+            - test-frontend
+      - analyze-backend:
+          requires:
+            - test-backend
+      - deploy_backend_infra:
+          requires:
+            - analyze-backend
+            - analyze-frontend
+          filters:
+            branches:
+              only: [master]
       - run-migrations:
           requires:
             - deploy_backend_infra
