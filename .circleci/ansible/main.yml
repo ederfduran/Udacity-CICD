@@ -4,6 +4,7 @@
   user: ubuntu
   roles:
     - role: configure-server
+    - role: configure-prometheus-node-exporter
   vars:
     environment_config:
       NODE_ENV: production
